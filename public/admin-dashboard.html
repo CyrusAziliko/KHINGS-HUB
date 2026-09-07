@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KHING'S HUB | Admin Control Center</title>
+
+
+<!-- Supabase Config -->
+
+<script src="./js/config.js"></script>
+
+
+<!-- Existing Styles -->
+<link rel="stylesheet" href="./css/styles.css">
+<link rel="stylesheet" href="./css/dashboard-enterprise.css">
+<link rel="stylesheet" href="./css/admin-enterprise.css">
+<link rel="stylesheet" href="./css/user-modal.css">
+
+<!-- Enterprise Redesign (loads last to override safely) -->
+<link rel="stylesheet" href="./css/enterprise-redesign.css">
+
+
+<!-- Charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Theme initialization (must run early to set data-theme on <html>) -->
+<script type="module" src="./js/worker-theme.js"></script>
+
+</head>
+
+
+<body>
+
+
+<div class="bg"></div>
+
+
+
+<div class="app-shell">
+
+
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+
+        <div class="sidebar-header">
+          <img src="../images/KHING'S HUB.png" alt="KHING'S HUB Logo" class="sidebar-logo-img" />
+        </div>
+
+<div class="sidebar-brand-sub">
+
+Mining AI Platform
+
+</div>
+
+
+<div class="sidebar-profile">
+
+<div class="avatar"></div>
+
+<div>
+
+<h4>Administrator</h4>
+
+<p>Mining Operations</p>
+
+</div>
+
+</div>
+
+
+
+
+<nav class="sidebar-nav">
+
+
+<button class="nav-item active"
+data-view="dashboard">
+
+🏠 Dashboard
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="tickets">
+
+🎫 Tickets
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="workforce">
+
+👷 Workforce
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="equipment">
+
+🚜 Equipment
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="safety">
+
+⚠ Safety
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="scheduling">
+
+📅 Scheduling
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="analytics">
+
+📊 Analytics
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="ai">
+
+🤖 AI Intelligence
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="reports">
+
+📑 Reports
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="users">
+
+👥 Users
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="settings">
+
+⚙ Settings
+
+</button>
+
+
+
+<button class="nav-item"
+data-view="khingbot">
+
+💬 KHINGBot
+
+</button>
+
+
+</nav>
+
+
+
+<div class="sidebar-footer">
+
+
+<button class="logout-btn"
+data-logout>
+
+🚪 Logout
+
+</button>
+
+
+</div>
+
+
+</aside>
+
+
+
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="main">
+
+
+
+<!-- ENTERPRISE TOP HEADER (premium addition, preserves existing topbar below) -->
+<div class="enterprise-topbar">
+  <div class="enterprise-topbar-left">
+    <div class="enterprise-topbar-greeting">
+      <h1>Good Morning, Admin</h1>
+      <p>KHING's Hub Mining Operations Platform</p>
+    </div>
+    <div class="enterprise-topbar-search">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search dashboard, reports, workers..." aria-label="Search" />
+    </div>
+  </div>
+  <div class="enterprise-topbar-right">
+    <div class="enterprise-topbar-status">
+      <span class="status-dot"></span>
+      <span class="status-text">All Systems Operational</span>
+    </div>
+    <button class="theme-toggle-topbar" id="theme-toggle" type="button" aria-label="Switch theme">
+      Switch to Light Mode
+    </button>
+    <div class="enterprise-topbar-notif" id="notif-bell-btn" data-notif-toggle>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="notif-badge" id="notifications-badge">0</span>
+    </div>
+
+    <!-- Notification Dropdown Panel -->
+    <div class="notif-dropdown" id="notifications-dropdown">
+      <div class="notif-dropdown-header">
+        <h3>Notifications</h3>
+        <button data-mark-notifications-all class="notif-mark-all">Mark all read</button>
+      </div>
+      <div class="notif-dropdown-list" id="notifications-list">
+        <div class="notif-dropdown-empty">No notifications yet</div>
+      </div>
+    </div>
+    <div class="enterprise-topbar-user">
+      <div class="avatar">👤</div>
+      <div>
+        <div class="name">Administrator</div>
+        <div class="role">Mining Operations</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<header class="topbar">
+
+
+<div>
+
+
+<h1>
+
+Admin Control Center
+
+</h1>
+
+
+<p class="muted">
+
+Enterprise Mining Management Platform
+
+</p>
+
+
+</div>
+
+
+
+<div class="user-chip">
+
+🟢 Online
+
+</div>
+
+
+
+</header>
+
+
+
+
+
+<section class="content-grid"
+data-view-root>
+
+
+
+
+<!-- ================= DASHBOARD ================= -->
+
+
+<section class="content-panel active"
+data-view-panel="dashboard">
+
+
+<div class="hero card glass">
+
+
+<h2>
+
+Welcome Administrator
+
+</h2>
+
+
+<p>
+
+Monitor operations, workforce, safety and production intelligence.
+
+</p>
+
+
+</div>
+
+
+
+
+<div class="kpi-row">
+
+
+<div class="kpi-card">
+
+<h3>Workers</h3>
+
+<strong id="kpi-workers">
+0
+</strong>
+
+</div>
+
+
+
+<div class="kpi-card">
+
+<h3>Tickets</h3>
+
+<strong id="totalTickets">
+0
+</strong>
+
+</div>
+
+
+
+
+<div class="kpi-card">
+
+<h3>Open Tickets</h3>
+
+<strong id="openTickets">
+0
+</strong>
+
+</div>
+
+
+
+
+<div class="kpi-card">
+
+<h3>Resolved</h3>
+
+<strong id="resolvedTickets">
+0
+</strong>
+
+</div>
+
+
+
+
+<div class="kpi-card">
+
+<h3>Users</h3>
+
+<strong id="totalUsers">
+0
+</strong>
+
+</div>
+
+
+</div>
+
+
+
+
+<!-- ================= PREMIUM KPI CARDS (enterprise addition) ================= -->
+<div class="kpi-row-enterprise">
+
+  <div class="kpi-card-premium gold">
+    <div class="kpi-head">
+      <div class="kpi-icon">⛏️</div>
+      <span class="kpi-trend up">↑ 12.5%</span>
+    </div>
+    <div class="kpi-value">98.5%</div>
+    <div class="kpi-label">Production Output</div>
+    <div class="kpi-description">Mining yield vs target this quarter</div>
+  </div>
+
+  <div class="kpi-card-premium green">
+    <div class="kpi-head">
+      <div class="kpi-icon">🛡️</div>
+      <span class="kpi-trend up">↑ 8.3%</span>
+    </div>
+    <div class="kpi-value">Excellent</div>
+    <div class="kpi-label">Safety Score</div>
+    <div class="kpi-description">Zero lost-time incidents this month</div>
+  </div>
+
+  <div class="kpi-card-premium blue">
+    <div class="kpi-head">
+      <div class="kpi-icon">🚜</div>
+      <span class="kpi-trend up">↑ 3.2%</span>
+    </div>
+    <div class="kpi-value">245</div>
+    <div class="kpi-label">Active Equipment</div>
+    <div class="kpi-description">Units currently operational across all zones</div>
+  </div>
+
+  <div class="kpi-card-premium orange">
+    <div class="kpi-head">
+      <div class="kpi-icon">🎫</div>
+      <span class="kpi-trend down">↓ 5.1%</span>
+    </div>
+    <div class="kpi-value">36</div>
+    <div class="kpi-label">Open Requests</div>
+    <div class="kpi-description">Pending tickets awaiting resolution</div>
+  </div>
+
+</div>
+
+
+<!-- ================= AI INSIGHTS SECTION (enterprise addition) ================= -->
+<div class="ai-insights-premium">
+  <div class="ai-header">
+    <h2>🤖 KHINGBot AI Insights</h2>
+    <span class="ai-badge">AI-Powered • Live</span>
+  </div>
+
+  <div class="ai-grid">
+    <div class="ai-card">
+      <div class="ai-card-icon blue">⚠️</div>
+      <h3>Safety Risk Prediction</h3>
+      <div class="ai-risk-value low">2.1%</div>
+      <p>Low probability of safety incidents in the next 24 hours. Continue monitoring high-traffic zones.</p>
+    </div>
+
+    <div class="ai-card">
+      <div class="ai-card-icon gold">🔧</div>
+      <h3>Equipment Failure Risk</h3>
+      <div class="ai-risk-value medium">14.7%</div>
+      <p>3 haul trucks due for preventive maintenance. Schedule service within 48 hours to avoid downtime.</p>
+    </div>
+
+    <div class="ai-card">
+      <div class="ai-card-icon cyan">📈</div>
+      <h3>Production Forecast</h3>
+      <div class="ai-risk-value">+8.3%</div>
+      <p>Output expected to increase next week based on current workforce deployment and equipment availability.</p>
+    </div>
+
+    <div class="ai-card">
+      <div class="ai-card-icon green">✅</div>
+      <h3>Workforce Optimization</h3>
+      <div class="ai-risk-value low">95%</div>
+      <p>Crew allocation at optimal levels. 2 shifts understaffed — consider rebalancing night crew assignments.</p>
+    </div>
+  </div>
+
+  <div class="ai-recommendations">
+    <h3>📋 Recommended Actions</h3>
+    <div class="rec-item">
+      <span class="rec-dot gold"></span>
+      <span class="rec-text"><strong>Schedule Maintenance:</strong> 3 haul trucks (T-102, T-107, T-112) due for service within 48 hours</span>
+    </div>
+    <div class="rec-item">
+      <span class="rec-dot blue"></span>
+      <span class="rec-text"><strong>Safety Briefing:</strong> Review night shift protocols for Zone 4 based on recent hazard reports</span>
+    </div>
+    <div class="rec-item">
+      <span class="rec-dot cyan"></span>
+      <span class="rec-text"><strong>Production Review:</strong> Tuesday's output dip correlates with conveyor downtime — investigate root cause</span>
+    </div>
+    <div class="rec-item">
+      <span class="rec-dot green"></span>
+      <span class="rec-text"><strong>Crew Optimization:</strong> Reassign 2 operators from Section A to Section C for evening shift balance</span>
+    </div>
+  </div>
+</div>
+
+
+<div class="grid">
+
+
+<div class="card glass">
+
+<h2>
+
+Ticket Analytics
+
+</h2>
+
+
+<div class="chart-container">
+    <canvas id="statusChart"></canvas>
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="card glass">
+
+
+<h2>
+
+Priority Analysis
+
+</h2>
+
+
+<div class="chart-container">
+    <canvas id="priorityChart"></canvas>
+</div>
+
+
+</div>
+
+
+
+
+            <div class="activity-card card glass">
+
+<div id="activity-feed">
+
+<div style="padding:20px;text-align:center;color:var(--text-secondary);font-size:13px;font-weight:700">Loading activity...</div>
+
+</div>
+
+</div>
+
+
+
+</div>
+
+<section class="dashboard-section">
+
+<h2>
+Work Orders
+</h2>
+
+<button
+id="open-work-order-modal"
+class="btn-primary">
+Create Work Order
+</button>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>
+ID
+</th>
+
+<th>
+Title
+</th>
+
+<th>
+Priority
+</th>
+
+<th>
+Status
+</th>
+
+<th>
+Assigned Worker
+</th>
+
+<th>
+Actions
+</th>
+
+
+</tr>
+
+</thead>
+
+
+<tbody id="work-orders-table">
+
+
+</tbody>
+
+
+</table>
+
+</div>
+
+
+</section>
+
+
+
+</section>
+
+
+
+
+
+<!-- ================= MODULE PANELS ================= -->
+
+
+<section class="content-panel"
+data-view-panel="tickets">
+
+
+<div class="card glass">
+
+<h2>
+Ticket Management
+</h2>
+
+
+<div id="admin-tickets"></div>
+
+
+</div>
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="users">
+
+
+<div class="card glass">
+
+
+<h2>
+User Management
+</h2>
+
+
+<div id="admin-users"></div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="workforce">
+
+
+<div class="card glass">
+
+
+<h2>
+Workforce Command Center
+</h2>
+
+
+<div id="workforce-root"></div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="equipment">
+
+
+<div class="card glass">
+
+<h2>
+Equipment Management
+</h2>
+
+
+<div id="equipment-root"></div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="safety">
+
+
+<div class="card glass">
+
+<h2>
+Safety Operations
+</h2>
+
+
+<div id="safety-root"></div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="scheduling">
+
+
+<div class="card glass">
+
+<h2>
+Shift Scheduling
+</h2>
+
+
+<div id="schedule-root"></div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="analytics">
+
+<div id="analytics-root">
+
+<div class="card glass analytics-loading">
+  <p>Loading analytics...</p>
+</div>
+
+</div>
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="ai">
+
+
+<div id="ai-center-root">
+
+    <div class="card glass ai-section">
+        <h2>AI Daily Operations Report</h2>
+
+        <div id="ai-report-content">
+            Generating AI report...
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+            <button id="refresh-report" class="btn ghost">🔄 Refresh Report</button>
+            <button id="download-report" class="btn primary">📥 Download PDF</button>
+        </div>
+
+        <div class="chart-container" style="margin-top:16px;height:200px">
+            <canvas id="riskChart"></canvas>
+        </div>
+    </div>
+
+    <div class="ai-section" style="margin-top:18px">
+
+        <div id="ai-prediction-root">
+            <div class="khh-ai-loading">
+                <div class="khh-ai-loading-spinner"></div>
+                <span class="muted">Loading KHING AI Operational Intelligence...</span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="reports">
+
+
+<div class="card glass">
+
+
+<h2>
+Reports
+
+</h2>
+
+
+<div id="reports-root"></div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="settings">
+
+
+<div class="card glass">
+
+
+<h2>
+System Settings
+</h2>
+
+
+<div id="settings-root"></div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<section class="content-panel"
+data-view-panel="khingbot">
+
+
+<div class="card glass">
+
+
+<h2>
+
+🤖 KHINGBot Assistant
+
+</h2>
+
+
+<p>
+
+AI operational assistant.
+
+</p>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+</section>
+
+
+
+</main>
+
+
+
+</div>
+
+<button id="khingbot-fab" class="khingbot-hover-btn" type="button" aria-label="Open KHINGBot assistant">
+<span class="khingbot-hover-btn-icon" aria-hidden="true">🤖</span>
+<span class="khingbot-hover-btn-text">Open KHINGBot</span>
+</button>
+
+<div
+id="khingbot-modal"
+class="khingbot-modal hidden"
+role="dialog"
+aria-modal="true"
+aria-label="KHINGBot assistant">
+
+<div class="khingbot-window">
+<div class="khingbot-header">
+<strong>🤖 KHINGBot</strong>
+<div class="khingbot-header-actions">
+<button id="khingbot-minimize" class="btn ghost" type="button" aria-label="Minimize KHINGBot">▬</button>
+<button id="khingbot-close" class="btn ghost" type="button" aria-label="Close KHINGBot">✖</button>
+</div>
+</div>
+<iframe
+class="khingbot-frame"
+src="https://khingschatbot-main.vercel.app/"
+title="KHINGBot Assistant">
+</iframe>
+</div>
+
+</div>
+
+
+
+
+<!-- User Modal (Phase 3.2) -->
+
+<div id="user-modal-container"></div>
+
+<!-- Admin Logic -->
+
+<script type="module" src="./js/admin.js"></script>
+<script type="module">
+  import { initKhingBotPage } from "./js/khingbot.js";
+  initKhingBotPage();
+</script>
+<script type="module">
+  import { initUserModal } from "./js/admin-modules/user-modal.js";
+  window.addEventListener("DOMContentLoaded", () => initUserModal());
+</script>
+
+<div 
+class="modal"
+id="work-order-modal">
+
+
+<div class="modal-content">
+
+
+<div class="modal-header">
+
+<h3>
+Create Work Order
+</h3>
+
+
+<button 
+id="close-work-order-modal">
+
+×
+</button>
+
+
+</div>
+
+
+
+<form id="work-order-form">
+
+
+<label>
+Title
+</label>
+
+<input 
+type="text"
+id="wo-title"
+required>
+
+
+
+<label>
+Description
+</label>
+
+<textarea
+id="wo-description">
+</textarea>
+
+
+
+<label>
+Category
+</label>
+
+<select id="wo-category">
+
+<option>
+Maintenance
+</option>
+
+<option>
+Electrical
+</option>
+
+<option>
+Mechanical
+</option>
+
+<option>
+Safety
+</option>
+
+<option>
+IT
+</option>
+
+<option>
+Production
+</option>
+
+</select>
+
+
+
+<label>
+Priority
+</label>
+
+<select id="wo-priority">
+
+
+<option>
+Critical
+</option>
+
+<option>
+High
+</option>
+
+<option selected>
+Medium
+</option>
+
+<option>
+Low
+</option>
+
+
+</select>
+
+
+
+<label>
+Due Date
+</label>
+
+<input
+type="date"
+id="wo-date">
+
+
+<label>
+Assign Worker
+</label>
+
+<select id="wo-worker">
+
+<option value="">
+Select Worker
+</option>
+
+</select>
+
+
+
+<button
+type="submit"
+class="btn-primary">
+
+Create Work Order
+
+</button>
+
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+</body>
+
+</html>

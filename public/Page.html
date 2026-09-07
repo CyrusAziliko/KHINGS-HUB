@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Khing's Hub • Login</title>
+
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/auth.css" />
+  <link rel="stylesheet" href="./css/toast.css" />
+</head>
+
+<body data-page="login">
+
+  <div class="bg" aria-hidden="true"></div>
+
+  <div class="page login-shell">
+    <section class="hero-panel">
+      <div class="brand-sigil">
+        <div class="logo">
+          <img src="../images/KHING'S HUB.png" alt="KHING'S HUB Logo" class="brand-logo-img" />
+        </div>
+        <div>
+          <div class="brand-title">⛏ KHING'S HUB</div>
+          <div class="brand-sub">Mining Operations Management Platform</div>
+        </div>
+      </div>
+
+      <div class="hero-copy">
+        <div class="eyebrow accent">Enterprise mining intelligence</div>
+        <h1>Modern, secure operations for every mine site.</h1>
+        <p>Align workforce, assets, and safety with intelligent enterprise controls built for mining operations.</p>
+      </div>
+    </section>
+
+    <main class="auth-card glass">
+      <div class="card-head">
+        <div>
+          <div class="eyebrow card-eyebrow">Secure access</div>
+          <h1>Welcome back</h1>
+          <p class="card-subtitle">Sign in to access your workspace.</p>
+        </div>
+      </div>
+
+      <div id="auth-error" class="auth-error" role="alert" aria-live="polite"></div>
+
+      <form class="form" novalidate>
+        <label>
+          <span>Email Address</span>
+          <input id="email" type="email" autocomplete="email" required placeholder="you@company.com" />
+        </label>
+
+        <label>
+          <span>Password</span>
+          <div class="pw-row">
+            <input id="password" data-password-input type="password" autocomplete="current-password" required placeholder="••••••••" />
+            <button type="button" class="pw-toggle" data-toggle-password aria-pressed="false" aria-label="Show password">Show</button>
+          </div>
+        </label>
+
+        <div class="actions">
+          <button type="button" data-auth-action="login" data-loading="auth" data-default-label="Sign In →" class="btn primary">
+            <span class="btn-label">Sign In →</span>
+            <span data-spinner class="btn-spinner" style="display:none" aria-hidden="true">⏳</span>
+          </button>
+          <button type="button" data-auth-action="signup" data-loading="auth" data-default-label="Create account" class="btn ghost">
+            <span class="btn-label">Create account</span>
+          </button>
+        </div>
+
+        <div class="links">
+          <a href="#" data-forgot-password>Forgot password?</a>
+        </div>
+      </form>
+
+      <div class="status-row">
+        <span class="status-pill"><span class="status-dot"></span> SYSTEM ONLINE</span>
+      </div>
+
+      <p class="hint">
+        Use your employee account to access tickets, announcements, and AI support.
+      </p>
+    </main>
+  </div>
+
+  <footer class="login-footer">© KHING's Hub • Mining Operations Management Platform</footer>
+
+  <div id="toast-container"></div>
+
+  <!-- ✅ Supabase Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- ✅ Central Config (Option A) -->
+  <script src="./js/config.js"></script>
+
+  <!-- ✅ Global Supabase Client -->
+  <script>
+    window.VAULTDESK_SUPABASE = window.supabase.createClient(
+      window.VAULTDESK_CONFIG.SUPABASE_URL,
+      window.VAULTDESK_CONFIG.SUPABASE_ANON_KEY
+    );
+  </script>
+
+  <!-- Auth logic -->
+  <script type="module">
+    import { initAuthPage } from "./js/auth.js";
+    window.initAuthPage = initAuthPage;
+
+    requestAnimationFrame(() => initAuthPage());
+  </script>
+
+  <!-- Chatbot (optional but fine) -->
+  <script type="module" src="./js/chatbot.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Khing's Hub • Worker Dashboard</title>
+
+    <!-- ✅ MUST LOAD FIRST -->
+    <script src="./js/config.js"></script>
+
+    <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="./css/_components-khing-hub.css" />
+    <link rel="stylesheet" href="./css/dashboard-enterprise.css" />
+    <link rel="stylesheet" href="./css/admin-enterprise.css" />
+    <link rel="stylesheet" href="./css/messages-enterprise.css" />
+
+    <!-- Enterprise Redesign (loads last to override safely) -->
+    <link rel="stylesheet" href="./css/enterprise-redesign.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="module" src="./js/supabaseClient.js"></script>
+  </head>
+
+  <body>
+    <div class="bg" aria-hidden="true"></div>
+
+    <!-- Simple Report Form (uses createReport.js + uploadReportFile) -->
+    <section class="content-panel" data-view-panel="report-form" style="display:none">
+      <div class="card glass">
+        <h2 class="h2">Submit Report</h2>
+        <label>
+          <span>Title</span>
+          <input id="title" type="text" placeholder="Report title" />
+        </label>
+        <label>
+          <span>Description</span>
+          <textarea id="description" placeholder="Description"></textarea>
+        </label>
+        <label>
+          <span>Attachment (optional)</span>
+          <input type="file" id="reportFile" />
+        </label>
+        <button class="btn primary" type="button" onclick="submitReport()">Submit Report</button>
+      </div>
+    </section>
+
+    <div class="app-shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="../images/KHING'S HUB.png" alt="KHING'S HUB Logo" class="sidebar-logo-img" />
+        </div>
+        <div class="sidebar-brand-sub">Mining AI Platform</div>
+
+
+          <div class="sidebar-profile">
+            <div class="avatar" aria-hidden="true"></div>
+            <div class="profile-info">
+              <h4>Worker Name</h4>
+              <p data-sidebar-department>Mining Operations</p>
+            </div>
+          </div>
+
+
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-view="dashboard" type="button">🏠 Dashboard</button>
+
+
+          <!-- Work Orders -->
+          <div class="nav-group">
+            <button class="nav-item submenu-toggle" type="button">
+              ⛏ Tickets
+              <span>▼</span>
+            </button>
+
+            <div class="submenu">
+              <!-- Submenu items jump to existing panels -->
+              <!-- keep submenu markup for backward compatibility; items still route to work-orders -->
+              <button
+                class="submenu-item"
+                data-view="work-orders"
+                type="button"
+              >
+                Create Ticket
+              </button>
+
+              <button
+                class="submenu-item"
+                data-view="work-orders"
+                type="button"
+              >
+
+                Ticket History
+              </button>
+            </div>
+          </div>
+
+          <!-- Safety -->
+          <div class="nav-group">
+            <button class="nav-item submenu-toggle" type="button">
+              ⚠️ Safety
+              <span>▼</span>
+            </button>
+
+            <div class="submenu">
+              <button class="submenu-item" data-view="safety" type="button">
+                Incidents
+              </button>
+
+              <button class="submenu-item" data-view="safety" type="button">
+                Safety Reports
+              </button>
+            </div>
+          </div>
+
+          <button class="nav-item" data-view="workforce" type="button">
+            👷 Workforce
+          </button>
+
+          <button class="nav-item" data-view="equipment" type="button">
+            🚜 Equipment
+          </button>
+
+          <button class="nav-item" data-view="schedule" type="button">
+            📅 Scheduling
+          </button>
+
+          <button class="nav-item" data-view="reports" type="button">
+            📊 Analytics
+          </button>
+
+          <button class="nav-item" data-view="call-center" type="button">
+            ☎️ Call Center
+          </button>
+
+          <button class="nav-item" data-view="control-center" type="button">
+            📡 Control Center
+          </button>
+
+          <button class="nav-item" data-view="messages" type="button">
+            💬 Messages
+          </button>
+
+
+
+          <!-- KhingBot Special Button -->
+          <button
+            id="khingbot-fab-sidebar"
+            class="khingbot-nav"
+            type="button"
+            data-view="khingbot"
+          >
+            💬 KHINGBot
+          </button>
+
+          <!-- Account -->
+          <div class="nav-group">
+            <button class="nav-item submenu-toggle" type="button">
+              ⚙️ Settings
+              <span>▼</span>
+            </button>
+
+            <div class="submenu">
+              <button class="submenu-item" data-view="profile" type="button">
+                Profile
+              </button>
+
+              <button class="submenu-item" data-view="settings" type="button">
+                Settings
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="bot-btn khingbot-nav" type="button" data-view="khingbot">
+            🤖 KHINGBot
+          </button>
+          <button data-logout class="logout-btn" type="button">
+            🚪 Logout
+          </button>
+        </div>
+      </aside>
+
+
+      <!-- MAIN AREA -->
+<main class="main" id="main-content">
+
+        <!-- ENTERPRISE TOP HEADER (premium addition, preserves existing topbar below) -->
+        <div class="enterprise-topbar">
+          <div class="enterprise-topbar-left">
+            <div class="enterprise-topbar-greeting">
+              <h1>Good Morning, <span data-welcome-name>Worker</span></h1>
+              <p>KHING's Hub Mining Operations Platform</p>
+            </div>
+            <div class="enterprise-topbar-search">
+              <span class="search-icon">🔍</span>
+              <input type="text" placeholder="Search workers, tickets, equipment..." aria-label="Search" />
+            </div>
+          </div>
+          <div class="enterprise-topbar-right">
+            <div class="enterprise-topbar-status">
+              <span class="status-dot"></span>
+              <span class="status-text">Connected</span>
+            </div>
+            <button class="theme-toggle-topbar" id="theme-toggle" type="button" aria-label="Switch theme">
+              Switch to Light Mode
+            </button>
+            <div class="enterprise-topbar-notif">
+              🔔
+              <span class="notif-badge" id="worker-notif-count">0</span>
+            </div>
+            <div class="enterprise-topbar-user">
+              <div class="avatar">👷</div>
+              <div>
+                <div class="name" data-topbar-name>Worker Name</div>
+                <div class="role" data-topbar-role>Mining Operations</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+          <div>
+            <h1>Worker Dashboard</h1>
+            <p class="muted">Manage tickets & communication</p>
+            <p class="muted" style="margin-top: 6px">
+              <span data-welcome-message>Welcome back</span>
+            </p>
+          </div>
+
+          <div class="user-chip">
+            <span class="status-dot"></span>
+            Online
+          </div>
+        </header>
+
+        <!-- PREMIUM WORKER ACTION BUTTONS (large, clear, tablet-friendly) -->
+        <div class="worker-actions-premium">
+          <div class="worker-action-card" onclick="document.querySelector('[data-view=work-orders]')?.click()">
+            <div class="action-icon orange">📋</div>
+            <h3>Submit Complaint</h3>
+            <p>Report workplace issues or file a formal complaint</p>
+          </div>
+          <div class="worker-action-card" onclick="document.querySelector('[data-view=safety]')?.click()">
+            <div class="action-icon green">⚠️</div>
+            <h3>Safety Report</h3>
+            <p>Report hazards, incidents, or safety concerns</p>
+          </div>
+          <div class="worker-action-card" onclick="document.querySelector('[data-view=equipment]')?.click()">
+            <div class="action-icon cyan">🔧</div>
+            <h3>Equipment Issue</h3>
+            <p>Report equipment malfunction or maintenance needed</p>
+          </div>
+          <div class="worker-action-card" onclick="document.querySelector('[data-view=work-orders]')?.click()">
+            <div class="action-icon blue">📬</div>
+            <h3>My Requests</h3>
+            <p>View and track your submitted tickets and requests</p>
+          </div>
+        </div>
+
+        <!-- CONTENT -->
+        <section class="content-grid" data-view-root>
+          <section class="content-panel active" data-view-panel="dashboard">
+
+            <!-- Hero Section - Premium Redesign -->
+            <section class="card glass hero-rail premium-hero">
+              <div class="hero-top">
+                <div class="hero-icon" aria-hidden="true">⛏️</div>
+                <div>
+                  <h2 class="hero-title" id="hero-title">Loading...</h2>
+                  <p class="hero-sub" id="hero-subtitle">Mining Operations Overview</p>
+                </div>
+              </div>
+              <div class="premium-hero-stats">
+                <div class="premium-hero-stat">
+                  <span class="premium-hero-stat-icon">👷</span>
+                  <div>
+                    <span class="premium-hero-stat-value" id="hero-workers">—</span>
+                    <span class="premium-hero-stat-label">Workers Active</span>
+                  </div>
+                </div>
+                <div class="premium-hero-stat">
+                  <span class="premium-hero-stat-icon">📊</span>
+                  <div>
+                    <span class="premium-hero-stat-value" id="hero-efficiency">—</span>
+                    <span class="premium-hero-stat-label">Efficiency</span>
+                  </div>
+                </div>
+                <div class="premium-hero-stat">
+                  <span class="premium-hero-stat-icon">🛡️</span>
+                  <div>
+                    <span class="premium-hero-stat-value" id="hero-safety-reviews">—</span>
+                    <span class="premium-hero-stat-label">Safety Reviews</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Premium KPI Row (Enterprise KPIs) -->
+            <section class="kpi-row-enterprise" id="enterprise-kpi-row">
+              <div class="kpi-card-premium gold">
+                <div class="kpi-head">
+                  <div class="kpi-icon">📋</div>
+                  <span class="kpi-trend up">▲ 12%</span>
+                </div>
+                <div class="kpi-value" id="kpi-tickets">—</div>
+                <div class="kpi-label">Open Tickets</div>
+                <div class="kpi-description">Pending work orders assigned to you</div>
+              </div>
+              <div class="kpi-card-premium green">
+                <div class="kpi-head">
+                  <div class="kpi-icon">✅</div>
+                  <span class="kpi-trend up">▲ 8%</span>
+                </div>
+                <div class="kpi-value" id="kpi-resolved">—</div>
+                <div class="kpi-label">Resolved</div>
+                <div class="kpi-description">Completed tickets this period</div>
+              </div>
+              <div class="kpi-card-premium blue">
+                <div class="kpi-head">
+                  <div class="kpi-icon">🚜</div>
+                  <span class="kpi-trend neutral">● Stable</span>
+                </div>
+                <div class="kpi-value" id="kpi-equipment-card">—</div>
+                <div class="kpi-label">Equipment</div>
+                <div class="kpi-description">Total registered assets</div>
+              </div>
+              <div class="kpi-card-premium orange">
+                <div class="kpi-head">
+                  <div class="kpi-icon">⚠️</div>
+                  <span class="kpi-trend down">▼ 3%</span>
+                </div>
+                <div class="kpi-value" id="kpi-incidents">—</div>
+                <div class="kpi-label">Safety Incidents</div>
+                <div class="kpi-description">Pending safety reports requiring attention</div>
+              </div>
+            </section>
+
+            <!-- Analytics Section: Production Trend (Left) + AI Insights (Right) -->
+            <section class="analytics-split" aria-label="Analytics">
+              <section class="card glass analytics-left">
+                <div class="card-title-row">
+                  <h2 class="h2">Production Trend</h2>
+                  <span class="pill bg-emerald-700" id="production-trend-pill">Last 7 days</span>
+                </div>
+                <canvas id="production-trend-chart" height="170"></canvas>
+              </section>
+
+              <section class="card glass analytics-right">
+                <div class="card-title-row">
+                  <h2 class="h2">AI Insights</h2>
+                  <span class="pill bg-blue-700">Auto</span>
+                </div>
+
+                <div class="ai-insights-list" id="ai-insights-panel">
+                  <div class="ai-insight">Loading insights...</div>
+                </div>
+              </section>
+            </section>
+
+            <section class="dashboard-section">
+              <div class="section-header">
+                <h2>My Work Orders</h2>
+              </div>
+
+              <div id="worker-work-orders" class="work-orders-grid"></div>
+            </section>
+
+            <!-- Premium Activity Feed -->
+            <section class="card glass actv-feed" aria-label="Recent Activities">
+              <div class="actv-feed-header">
+                <div class="actv-feed-header-left">
+                  <span class="actv-feed-icon">📌</span>
+                  <span class="actv-feed-title">Recent Activities</span>
+                  <span class="actv-feed-count" id="activity-count">0</span>
+                </div>
+                <div class="actv-feed-header-right">
+                  <span class="actv-feed-live"></span>
+                  <span class="actv-feed-live-text">Live</span>
+                </div>
+              </div>
+              <div class="actv-feed-list" id="activity-timeline">
+                <div class="actv-item">
+                  <div class="actv-item-icon-wrap actv-item-icon-wrap--ticket">📋</div>
+                  <div class="actv-item-body">
+                    <div class="actv-item-desc">Loading recent activities...</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Ticket Follow-Up & Resolution Confirmation -->
+            <section class="card glass" id="ticket-followup-section" style="display:none;">
+              <div class="section-header">
+                <h2>📋 Ticket Follow-Up</h2>
+                <span class="pill bg-amber-700" id="followup-count">0</span>
+              </div>
+              <div id="ticket-followup-list">
+                <!-- Follow-up cards rendered by ticket-followup.js -->
+              </div>
+            </section>
+
+            <!-- Secondary content grid -->
+            <div class="grid">
+              <section class="card glass" id="daily-operations-summary">
+                <h2 class="h2">Daily Operations Summary</h2>
+                <div class="muted" style="margin-bottom:10px;">
+                  Overview of open work orders, safety alerts, assigned tasks, and equipment status.
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr; gap: 12px;">
+                  <div class="pill bg-emerald-700">Open Work Orders</div>
+                  <div id="ops-summary-content" style="line-height:1.6; font-size:14px;">
+                    Loading operational data...
+                  </div>
+                  <div class="pill bg-amber-700" style="width:fit-content;">Equipment Alerts</div>
+                  <div class="muted" style="font-size:13px; line-height:1.6;">
+                    Monitor equipment status and maintenance alerts from the equipment registry.
+                  </div>
+                  <div class="pill bg-blue-700" style="width:fit-content;">Assigned Tasks</div>
+                  <div class="muted" style="font-size:13px; line-height:1.6;">
+                    View your current work orders and pending assignments.
+                  </div>
+                  <div class="pill bg-indigo-700" style="width:fit-content;">Safety Alerts</div>
+                  <div class="muted" style="font-size:13px; line-height:1.6;">
+                    Track active safety incidents and unresolved hazards.
+                  </div>
+                </div>
+              </section>
+
+              <section class="card glass">
+                <h2 class="h2">Your Highlights</h2>
+                <div data-worker-highlights></div>
+              </section>
+
+              <section class="card glass">
+                <h2 class="h2">Mini Directory</h2>
+                <div data-worker-mini-directory></div>
+              </section>
+            </div>
+
+          </section>
+
+          <!-- Work Orders / Tickets Premium -->
+          <section class="content-panel" data-view-panel="work-orders">
+            <div class="tix-wrap">
+
+              <!-- ── Premium Hero Banner ── -->
+              <div class="tix-hero">
+                <div class="tix-hero-row">
+                  <div class="tix-hero-left">
+                    <div class="tix-hero-icon">🎫</div>
+                    <div>
+                      <h2 class="tix-hero-title">Ticket Operations Center</h2>
+                      <p class="tix-hero-sub">Create, track, and manage your support tickets and work requests</p>
+                    </div>
+                  </div>
+                  <div class="tix-hero-right">
+                    <div class="tix-hero-badge">
+                      <span class="tix-hero-dot"></span>
+                      <span data-tix-total-badge>My Tickets</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Quick Stats Bar ── -->
+              <div class="tix-stats" id="tix-stats-bar">
+                <div class="tix-stat-item">
+                  <span class="tix-stat-num tix-stat-num--open" id="tix-stat-open">—</span>
+                  <span class="tix-stat-lbl">Open</span>
+                </div>
+                <div class="tix-stat-div"></div>
+                <div class="tix-stat-item">
+                  <span class="tix-stat-num tix-stat-num--progress" id="tix-stat-progress">—</span>
+                  <span class="tix-stat-lbl">In Progress</span>
+                </div>
+                <div class="tix-stat-div"></div>
+                <div class="tix-stat-item">
+                  <span class="tix-stat-num tix-stat-num--done" id="tix-stat-done">—</span>
+                  <span class="tix-stat-lbl">Resolved</span>
+                </div>
+              </div>
+
+              <!-- ── Toolbar ── -->
+              <div class="tix-bar">
+                <div class="tix-bar-left">
+                  <div class="tix-search-wrap">
+                    <span class="tix-search-ico">🔍</span>
+                    <input type="text" class="tix-search" id="tix-search-input" placeholder="Search tickets by title, category..." aria-label="Search tickets" />
+                  </div>
+                  <select class="tix-pick" id="tix-filter-status">
+                    <option value="all">All Status</option>
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Closed">Closed</option>
+                  </select>
+                  <select class="tix-pick" id="tix-filter-priority">
+                    <option value="all">All Priority</option>
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <div class="tix-bar-right">
+                  <button class="tix-action tix-action--primary" type="button" id="tix-btn-new">➕ New Ticket</button>
+                </div>
+              </div>
+
+              <!-- ── Create Ticket Panel (hidden by default) ── -->
+              <div class="tix-panel" id="tix-create-panel" style="display:none;">
+                <div class="tix-panel-head">
+                  <h3 class="tix-panel-title">📝 Create New Ticket</h3>
+                  <button class="tix-panel-close" type="button" id="tix-create-close">✕</button>
+                </div>
+                <div class="tix-create-body">
+                  <div class="tix-create-grid">
+                    <div class="tix-create-field">
+                      <label class="tix-create-label">Title</label>
+                      <input id="ticket-title" type="text" class="tix-create-input" placeholder="e.g., Maintenance system access issue" />
+                    </div>
+                    <div class="tix-create-field tix-create-field--full">
+                      <label class="tix-create-label">Description</label>
+                      <textarea id="ticket-description" class="tix-create-textarea" placeholder="Describe the issue, steps to reproduce, and urgency."></textarea>
+                    </div>
+                    <div class="tix-create-field">
+                      <label class="tix-create-label">Category</label>
+                      <select id="ticket-category" class="tix-create-select">
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Safety">Safety</option>
+                        <option value="IT">IT</option>
+                        <option value="HR">HR</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div class="tix-create-field">
+                      <label class="tix-create-label">Priority</label>
+                      <select id="ticket-priority" class="tix-create-select">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                      </select>
+                    </div>
+                    <div class="tix-create-field tix-create-field--full">
+                      <label class="tix-create-label">Attachment (optional)</label>
+                      <div class="tix-file-wrap">
+                        <input id="ticket-attachment" type="file" class="tix-file-input" />
+                        <span class="tix-file-label">Choose file</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tix-create-actions">
+                    <button class="tix-action tix-action--primary" type="button" data-create-ticket>🚀 Submit Ticket</button>
+                    <button class="tix-action" type="button" id="tix-create-cancel">Cancel</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── My Reports Section ── -->
+              <div class="tix-panel" data-view-panel="my-reports">
+                <div class="tix-panel-head">
+                  <h3 class="tix-panel-title">📋 My Reports</h3>
+                  <span class="tix-chip" id="tix-report-count">0</span>
+                </div>
+                <div id="my-reports-list" class="tix-load">Loading reports...</div>
+              </div>
+
+              <!-- ── My Tickets List ── -->
+              <div class="tix-panel">
+                <div class="tix-panel-head">
+                  <h3 class="tix-panel-title">🎟️ My Tickets</h3>
+                  <span class="tix-chip" id="tix-count-badge">0</span>
+                </div>
+                <div class="tix-list" id="tickets-table">
+                  <div class="tix-load">Loading tickets...</div>
+                </div>
+              </div>
+
+              <!-- ── Notifications ── -->
+              <div class="tix-panel">
+                <div class="tix-panel-head">
+                  <h3 class="tix-panel-title">🔔 Notifications</h3>
+                  <div class="tix-panel-head-acts">
+                    <span class="tix-chip" id="notifications-badge">0</span>
+                    <button class="tix-action" type="button" data-mark-notifications-all>Mark all read</button>
+                  </div>
+                </div>
+                <div id="notifications-list" style="padding: 12px 18px;"></div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- Call Center / Staff Directory -->
+          <section class="content-panel" data-view-panel="call-center">
+            <div class="call-center-shell">
+
+              <!-- HEADER -->
+              <div class="call-center-header">
+                <div class="call-center-header-left">
+                  <div class="call-center-header-icon">☎️</div>
+                  <div>
+                    <h2 class="call-center-header-title" data-call-center-header>Call Center</h2>
+                    <p class="call-center-header-sub">Browse employees by role/department and contact via call or email.</p>
+                  </div>
+                </div>
+                <div class="call-center-header-right">
+                  <span class="call-center-header-badge" data-call-center-count>Loading...</span>
+                </div>
+              </div>
+
+              <!-- TOOLBAR: Search + Department Filter -->
+              <div class="call-center-toolbar">
+                <div class="call-center-search-wrap">
+                  <span class="call-center-search-icon">🔍</span>
+                  <input
+                    type="text"
+                    class="call-center-search"
+                    data-call-center-search
+                    placeholder="Search by name, department, position, phone or email..."
+                    aria-label="Search contacts"
+                  />
+                </div>
+                <select class="call-center-select" data-call-center-dept-filter aria-label="Filter by department">
+                  <option value="">All Departments</option>
+                </select>
+              </div>
+
+              <!-- CONTACT CARDS GRID -->
+              <div class="call-center-grid" data-employee-directory data-department="">
+                <div class="call-center-loading">Loading contacts...</div>
+              </div>
+
+              <!-- EMERGENCY CONTACTS -->
+              <div class="call-center-emergency">
+                <div class="call-center-emergency-header">
+                  <span class="call-center-emergency-icon">🚨</span>
+                  <div>
+                    <h3 class="call-center-emergency-title">Emergency Contacts</h3>
+                    <p class="call-center-emergency-sub">Immediate assistance numbers for critical situations</p>
+                  </div>
+                </div>
+                <div class="call-center-emergency-list">
+                  <div class="call-center-emergency-item">
+                    <span class="call-center-emergency-item-icon">🛡️</span>
+                    <div class="call-center-emergency-item-info">
+                      <strong>Safety Officer</strong>
+                      <span>0540990185</span>
+                    </div>
+                    <a class="call-center-emergency-btn" href="tel:0540990185">📞 Call Now</a>
+                  </div>
+                  <div class="call-center-emergency-item">
+                    <span class="call-center-emergency-item-icon">📡</span>
+                    <div class="call-center-emergency-item-info">
+                      <strong>Security / Control Room</strong>
+                      <span>0554094874</span>
+                    </div>
+                    <a class="call-center-emergency-btn" href="tel:0554094874">📞 Call Now</a>
+                  </div>
+                  <div class="call-center-emergency-item">
+                    <span class="call-center-emergency-item-icon">👥</span>
+                    <div class="call-center-emergency-item-info">
+                      <strong>HR / Welfare</strong>
+                      <span>0509910960</span>
+                    </div>
+                    <a class="call-center-emergency-btn" href="tel:0509910960">📞 Call Now</a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- Safety & Incidents Premium -->
+          <section class="content-panel" data-view-panel="safety">
+            <div class="saf-wrap" data-safety-incidents-root>
+              <!-- Premium content rendered by safety-incidents.js -->
+            </div>
+          </section>
+
+
+<!-- Workforce (Command Center) -->
+          <section class="content-panel" data-view-panel="workforce">
+            <div data-workforce-root></div>
+          </section>
+
+          <!-- Equipment / Assets -->
+          <section class="content-panel" data-view-panel="equipment">
+            <section class="equipment-shell">
+              <div class="equipment-shell-head card glass">
+                <div>
+                  <h2 class="h2 equipment-shell-title">🏗️ Equipment Command Center</h2>
+                  <p class="muted equipment-shell-sub">
+                    Monitor asset health, ownership, and operating status across work zones.
+                  </p>
+                </div>
+                <div class="equipment-shell-tags" aria-label="Equipment section highlights">
+                  <span class="pill equipment-shell-pill">Live Registry</span>
+                  <span class="pill equipment-shell-pill">Status Visibility</span>
+                  <span class="pill equipment-shell-pill">Ops Intelligence</span>
+                </div>
+              </div>
+
+              <div data-equipment-assets-root></div>
+            </section>
+          </section>
+
+          <!-- Work Schedule / Shifts (Premium) -->
+          <section class="content-panel" data-view-panel="schedule">
+            <div data-work-schedule-root></div>
+          </section>
+
+          <!-- Announcements -->
+          <section class="content-panel" data-view-panel="announcements">
+            <div class="card glass">
+              <h2 class="h2">📢 Announcements</h2>
+              <p class="muted" style="margin: 8px 0 0">
+                Recent announcements and critical updates from management.
+              </p>
+              <div data-announcements-panel-root></div>
+            </div>
+          </section>
+
+          <!-- Reports & Analytics -->
+          <section class="content-panel" data-view-panel="reports">
+            <div id="analytics-root"></div>
+          </section>
+
+          <!-- Control Center -->
+          <section class="content-panel" data-view-panel="control-center">
+            <div id="control-center-root"></div>
+          </section>
+
+
+          <!-- Messages (optional placeholder) -->
+          <section class="content-panel" data-view-panel="messages">
+            <div class="card glass">
+              <h2 class="h2">Messages</h2>
+              <p class="muted" style="margin: 8px 0 0">
+                Worker ↔ Supervisor communication and department messaging.
+              </p>
+              <div data-messages-root></div>
+            </div>
+          </section>
+
+          <!-- Profile -->
+          <section class="content-panel"
+            data-view-panel="profile">
+            
+            <div class="card glass">
+            
+            <h2 class="h2">
+            Worker Profile
+            </h2>
+            
+            <p class="muted">
+            Manage your personal information and profile image.
+            </p>
+            
+            <div data-profile-root></div>
+            
+            </div>
+            
+            </section>
+
+          <!-- Settings -->
+          <section class="content-panel" data-view-panel="settings">
+            <div class="card glass">
+              <h2 class="h2">Settings</h2>
+              <p class="muted" style="margin: 8px 0 0">
+                Profile, password change, theme, and notifications.
+              </p>
+              <div data-settings-root></div>
+            </div>
+          </section>
+
+          <!-- KhingBot -->
+          <section class="content-panel" data-view-panel="khingbot">
+            <div class="card glass" data-khingbot-root>
+              <!-- Chatbot iframe rendered dynamically by khingbot.js -->
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <button id="khingbot-fab" class="khingbot-hover-btn" type="button" aria-label="Open KHINGBot assistant">
+      <span class="khingbot-hover-btn-icon" aria-hidden="true">🤖</span>
+      <span class="khingbot-hover-btn-text">Open KHINGBot</span>
+    </button>
+
+    <!-- Modal -->
+    <div
+      id="khingbot-modal"
+      class="khingbot-modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="KhingBot"
+    >
+      <div class="khingbot-window">
+        <div class="khingbot-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-weight:900">🤖 KHINGBot</span>
+          </div>
+          <div class="khingbot-header-actions">
+            <button id="khingbot-minimize" class="btn ghost" type="button" aria-label="Minimize KHINGBot">
+              ▬
+            </button>
+            <button id="khingbot-close" class="btn ghost" type="button" aria-label="Close KHINGBot">
+              ✖
+            </button>
+          </div>
+        </div>
+        <iframe
+          src="https://khingschatbot-main.vercel.app/"
+          class="khingbot-frame"
+          title="KHINGBot Assistant"
+        ></iframe>
+      </div>
+    </div>
+
+<script type="module">
+  // Ensure config is already loaded from config.js or client.js
+  if (!window.VAULTDESK_CONFIG) {
+    throw new Error("VAULTDESK_CONFIG is not loaded. Check config.js import order.");
+  }
+
+  // Optional: map legacy name if older scripts still use KHING_HUB_CONFIG
+  window.KHING_HUB_CONFIG = window.VAULTDESK_CONFIG;
+</script>
+
+    <script type="module" src="./js/worker-theme.js"></script>
+    <script type="module" src="./js/sidebar.js"></script>
+
+    <script type="module">
+
+      import { initDashboard } from "./js/dashboard.js";
+
+      import { initTicketsModule } from "./js/tickets.js";
+      import { initNotificationsPanel } from "./js/notifications.js";
+
+      import { initCommunicationHub } from "./js/communication.js";
+      import { initWorkerExtraContent } from "./js/worker-extra-content.js";
+      import { initWorkerNav } from "./js/worker-nav.js";
+
+      import { initSafetyIncidents } from "./js/safety-incidents.js";
+      import { initEquipmentAssets } from "./js/equipment-assets.js";
+      import { initWorkSchedule } from "./js/work-schedule.js";
+      import { initAnnouncementsPanel } from "./js/announcements-panel.js";
+      import { loadAnalyticsModule } from "./js/admin-modules/analytics.js";
+      import { initControlCenter } from "./js/control-center.js";
+      import { initWorkforce } from "./js/workforce.js";
+
+      import { initMessagesPanel } from "./js/messages.js";
+      import { initSettingsPanel } from "./js/settings.js";
+      import { initProfilePanel } from "./js/profile.js";
+      import { initKhingBotPage } from "./js/khingbot.js";
+
+      import { initializeHeroSection } from "./js/dashboard-hero.js";
+      import { initWorkerWorkOrders } from "./js/worker-modules/work-orders-ui.js";
+      import { initTicketFollowUp, cleanupTicketFollowUp } from "./js/ticket-followup.js";
+
+      // Keep the legacy dashboard modules hidden to avoid double-render conflicts.
+
+      const legacyAnalytics = document.getElementById("legacy-analytics");
+      if (legacyAnalytics) legacyAnalytics.style.display = "none";
+
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        // logout
+        document
+          .querySelector("button[data-logout]")
+          ?.addEventListener("click", async () => {
+            const mod = await import("./js/supabaseClient.js");
+            await mod.supabase.auth.signOut();
+            window.location.href = "./Page.html";
+          });
+
+        console.log("worker-dashboard DOMContentLoaded");
+
+        // --- Worker auth guard + identity foundation ---
+        const mod = await import("./js/supabaseClient.js");
+        const { supabase } = mod;
+
+        try {
+          const {
+            data: { user },
+            error: userErr,
+          } = await supabase.auth.getUser();
+          if (userErr) throw userErr;
+          if (!user) {
+            window.location.href = "./Page.html";
+            return;
+          }
+
+          // Fetch worker identity from profiles
+          console.log("[W2] auth user id:", user?.id);
+
+          const {
+            data: profile,
+            error: profileErr,
+          } = await supabase
+            .from("profiles")
+            .select(
+              "id, full_name, department, position, avatar_url, role, status"
+            )
+            .eq("id", user.id)
+            .maybeSingle();
+
+          console.log("[W2] profiles query result profile:", profile);
+          console.log("[W2] profiles query error:", profileErr);
+
+          if (profileErr) {
+            // Preserve existing redirect/auth behavior; stop initialization.
+            console.error("[W2] profiles lookup failed; stopping init.", profileErr);
+            return;
+          }
+
+          // If no profile row exists, report it and stop initialization.
+          if (!profile) {
+            console.warn(
+              "[W2] no profiles row found for user.id:",
+              user?.id,
+            );
+            return;
+          }
+
+
+          // Enforce role on page load
+          const role = profile?.role || "worker";
+          if (role === "admin") {
+            window.location.href = "./admin-dashboard.html";
+            return;
+          }
+
+          // Shared identity context for other modules
+          window.currentUser = user;
+          window.currentWorker = profile;
+
+          // Render sidebar identity (no UI redesign; update existing placeholders)
+          const nameEl = document.querySelector(".sidebar-profile h4");
+          const deptEl = document.querySelector("[data-sidebar-department]");
+          const avatarEl = document.querySelector(".sidebar-profile .avatar");
+
+          if (nameEl) nameEl.textContent = profile?.full_name || user.email || "Worker";
+          if (deptEl) deptEl.textContent = profile?.department || "";
+
+          if (avatarEl) {
+            const avatarUrl = profile?.avatar_url;
+            if (avatarUrl) {
+              avatarEl.innerHTML = `<img src="${avatarUrl}" alt="Worker avatar" />`;
+            } else {
+              avatarEl.innerHTML = '<div class="avatar-placeholder">👷</div>';
+            }
+          }
+
+          // Also update the enterprise topbar user section
+          const topbarAvatar = document.querySelector(".enterprise-topbar-user .avatar");
+          const topbarName = document.querySelector("[data-topbar-name]");
+          const topbarRole = document.querySelector("[data-topbar-role]");
+          const greetingH1 = document.querySelector(".enterprise-topbar-greeting h1");
+
+          if (topbarAvatar) {
+            const avatarUrl = profile?.avatar_url;
+            if (avatarUrl) {
+              topbarAvatar.innerHTML = `<img src="${avatarUrl}" alt="Worker avatar" />`;
+            } else {
+              topbarAvatar.innerHTML = '<div class="avatar-placeholder">👷</div>';
+            }
+          }
+          if (topbarName) {
+            topbarName.textContent = profile?.full_name || user.email || "Worker";
+          }
+          if (topbarRole) {
+            topbarRole.textContent = profile?.department || "Mining Operations";
+          }
+          if (greetingH1) {
+            const displayName = profile?.full_name || "Worker";
+            greetingH1.textContent = `Good Morning, ${displayName}`;
+          }
+
+          const statusText = profile?.status ? String(profile.status) : "";
+          if (statusText) {
+            const chip = document.querySelector(".topbar .user-chip");
+            // keep existing Online label; just update tooltip text via aria-label
+            if (chip) chip.setAttribute("aria-label", `Worker status: ${statusText}`);
+          }
+
+          // If you later add status/position/department UI fields, they can read from window.currentWorker
+          // while keeping existing markup unchanged for now.
+
+
+          // init modules (only after auth + identity load)
+          initializeHeroSection();
+          initDashboard();
+          initTicketsModule();
+
+          // Enterprise KPI/dashboard (W3.1) MUST load after window.currentUser/currentWorker exist
+          if (window.currentUser && window.currentWorker && window.currentWorker.id) {
+            await import("./js/worker-dashboard-enterprise.js");
+          } else {
+            console.warn(
+              "worker-dashboard: enterprise module not loaded because currentWorker/currentUser not ready",
+            );
+          }
+
+          await initWorkerWorkOrders();
+
+          // Initialize Ticket Follow-Up module (shows resolved tickets needing confirmation)
+          initTicketFollowUp();
+
+          initNotificationsPanel();
+
+          initCommunicationHub();
+          // Staff Directory uses existing contacts loader for now.
+          try {
+            await import("./js/staff-directory.js").then((m) =>
+              m.initStaffDirectory?.(),
+            );
+          } catch {}
+          initWorkerExtraContent();
+          initWorkerNav();
+
+          // Mining/Enterprise panels (placeholders for now)
+          initSafetyIncidents();
+          initEquipmentAssets();
+          initWorkSchedule();
+          initWorkforce();
+          initAnnouncementsPanel();
+          await loadAnalyticsModule();
+          initControlCenter();
+
+          initMessagesPanel();
+          initSettingsPanel();
+          initProfilePanel();
+
+          // Floating KhingBot FAB + Modal
+          initKhingBotPage();
+        } catch (e) {
+          console.error("worker-dashboard auth/identity bootstrap failed", e);
+          window.location.href = "./Page.html";
+        }
+      });
+    </script>
+  </body>
+</html>
