@@ -3,6 +3,30 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/css/:path*",
+      "destination": "/public/css/:path*"
+    },
+    {
+      "source": "/js/:path*",
+      "destination": "/public/js/:path*"
+    },
+    {
+      "source": "/worker-dashboard.html",
+      "destination": "/public/worker-dashboard.html"
+    },
+    {
+      "source": "/admin-dashboard.html",
+      "destination": "/public/admin-dashboard.html"
+    },
+    {
+      "source": "/ai-center.html",
+      "destination": "/public/ai-center.html"
+    },
+    {
+      "source": "/Page.html",
+      "destination": "/public/Page.html"
+    },
+    {
       "source": "/",
       "destination": "/public/Page.html"
     }

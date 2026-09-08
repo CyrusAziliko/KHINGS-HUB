@@ -20,3 +20,5 @@ pnpm-debug.log*
 
 # Supabase local generated/runtime files
 supabase/.temp/
+
+.vercel
